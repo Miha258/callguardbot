@@ -1,6 +1,6 @@
 from aiogram import Bot
+from config import API_TOKEN
 
-TOKEN = "5478037139:AAGEMwmj5IjclMzr0IRbbt79bq8zrzwm-0E"
 PARSE_MODE = "HTML"
 
-bot = Bot(token = TOKEN, parse_mode=PARSE_MODE)
+bot = Bot(token = API_TOKEN, parse_mode=PARSE_MODE)

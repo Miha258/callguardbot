@@ -1,11 +1,10 @@
-import asyncio
+from config import MONGODB_URI
 from typing import Any
 import motor.motor_asyncio 
 from abc import ABC
 
 
-conn_addres = "mongodb+srv://tEST:Hrfb2kLK8Aoo4Fxk@cluster0.zlpox.mongodb.net/guardbot?retryWrites=true&w=majority"
-cluster: motor.motor_asyncio.core.AgnosticClient = motor.motor_asyncio.AsyncIOMotorClient(conn_addres)
+cluster: motor.motor_asyncio.core.AgnosticClient = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URI)
 
 class DB(ABC):
     collection: motor.motor_asyncio.core.AgnosticCollection 
@@ -29,29 +28,29 @@ class DB(ABC):
     
     
     @classmethod
-    async def insert(self, query: dict[str, Any]):
-        await self.collection.insert_one(query)
+    async def insert(cls, query: dict[str, Any]):
+        await cls.collection.insert_one(query)
 
 
     @classmethod
-    async def delete(self, user_id: str):
-        await self.collection.delete_one({"_id": user_id})
+    async def delete(cls, user_id: str):
+        await cls.collection.delete_one({"_id": user_id})
 
 
 class BaseUser(DB, ABC):
     @classmethod
-    async def set_fullname(self, user_id: int, fullname: str):
-        await self.update(user_id, "set", {"fullname": fullname})
+    async def set_fullname(cls, user_id: int, fullname: str):
+        await cls.update(user_id, "set", {"fullname": fullname})
 
 
     @classmethod
-    async def set_city(self, user_id: int, city: str):
-        await self.update(user_id, "set", {"city": city})
+    async def set_city(cls, user_id: int, city: str):
+        await cls.update(user_id, "set", {"city": city})
        
         
     @classmethod
-    async def set_phone(self, user_id: int, phone: str):
-        await self.update(user_id, "set", {'phone': phone})
+    async def set_phone(cls, user_id: int, phone: str):
+        await cls.update(user_id, "set", {'phone': phone})
         
     
     @classmethod
@@ -63,19 +62,39 @@ class BaseUser(DB, ABC):
 class Customer(BaseUser):
     collection = cluster.guardbot.customers
 
+    @classmethod
+    async def set_activated(cls, user_id: int, toggle: bool) -> bool:
+        await cls.update(user_id, "set", {'activated': toggle})
+
 
 class Guards(BaseUser):
     collection = cluster.guardbot.guards
 
             
     @classmethod
-    async def set_description(self, user_id: int, description: str):
-        await self.update(user_id, "set", {"description": description})
+    async def set_description(cls, user_id: int, description: str):
+        await cls.update(user_id, "set", {"description": description})
 
 class UserResponds(DB):
     collection = cluster.guardbot.responds
 
     @classmethod
-    async def new(self, user_id: int, fullname:str, city: str, description: str):
-        await self.insert({"user_id": user_id, "fullname": fullname, "city": city, "description": description})
+    async def new(cls, user_id: int, fullname:str, city: str, description: str):
+        await cls.insert({"user_id": user_id, "fullname": fullname, "city": city, "description": description})
+
+class BlackList(DB):
+    collection = cluster.guardbot.blacklist
+
+    @classmethod
+    async def is_in(cls, user_id) -> bool:
+        return bool(await cls.get(user_id))
+    
+    @classmethod
+    async def add(cls, user_id: int):
+        await cls.insert({"user_id": user_id})
+
+    @classmethod
+    async def remove(cls, user_id: int):
+        await cls.delete(user_id)
+
 

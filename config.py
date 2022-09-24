@@ -2,6 +2,10 @@ import json
 from re import L
 from typing import Any
 
+API_TOKEN = "5478037139:AAGEMwmj5IjclMzr0IRbbt79bq8zrzwm-0E"
+MONGODB_URI = "mongodb+srv://tEST:Hrfb2kLK8Aoo4Fxk@cluster0.zlpox.mongodb.net/guardbot?retryWrites=true&w=majority"
+PROVIDER_TOKEN = "1661751239:TEST:1095610815"
+
 JSON_PATH = 'config.json'
 
 def get_cities() -> dict[str, int]:
@@ -37,10 +41,20 @@ def add_new_alarm(id: int, max: int, customer_id: int):
         "max": max,
         "customer": customer_id
     }
-    print(config["alarms"])
     
     with open(JSON_PATH, 'w', encoding = 'utf-8') as f:
         json.dump(config, f, indent = 4, ensure_ascii=True)
+
+
+def is_alarm_exists(id: int):
+    with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
+        config = json.load(f)
+
+    alarm = config["alarms"][str(id)]["guards"]
+    if alarm:
+        return True
+    return False
+    
 
 def add_guard_to_alarm(id: int, guard_id: int):
     with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
@@ -100,14 +114,14 @@ def get_alarm_customer(id: int) -> str | None:
     return None
 
 
-def get_alarm_by_customer_id(user_id: int) -> str | None:
+def get_alarm_by_customer_id(user_id: int) -> int | None:
     with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
         config = json.load(f)
     
     alarms: dict[str, Any] = config["alarms"]
     user = list(filter(lambda alarm: int(alarm[1]['customer']) == user_id, alarms.items()))
     if user:
-        return user[0][0]
+        return int(user[0][0])
 
         
 def add_to_accepted_alarms(guard_id: int, alarm_id: int):
@@ -139,4 +153,8 @@ def remove_from_accepted_alarms(guard_id: int):
         json.dump(config, f, indent = 4, ensure_ascii=True)
 
 
+def is_admin(admin_id: int) -> bool:
+    with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
+        config = json.load(f)
 
+    return admin_id in config["admins"]  
