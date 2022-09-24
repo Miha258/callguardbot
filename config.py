@@ -3,7 +3,7 @@ from re import L
 from typing import Any
 
 API_TOKEN = "5478037139:AAGEMwmj5IjclMzr0IRbbt79bq8zrzwm-0E"
-MONGODB_URI = "mongodb+srv://tEST:Hrfb2kLK8Aoo4Fxk@cluster0.zlpox.mongodb.net/guardbot?retryWrites=true&w=majority"
+MONGODB_URI = "mongodb://localhost:27017/guardbot"
 PROVIDER_TOKEN = "1661751239:TEST:1095610815"
 
 JSON_PATH = 'config.json'
