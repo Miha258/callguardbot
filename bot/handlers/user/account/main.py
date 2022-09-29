@@ -19,42 +19,38 @@ from bot.misc.bot import bot
 account_router = Router()
 
 
-@account_router.callback_query(F.data.in_({'edit_account', 'delete_account'}))
+@account_router.callback_query(F.data.in_({'edit_account', 'delete_account'}), UserExistFilter(user_exist = True))
 async def user_account_options(query: types.CallbackQuery):
     answer_data = query.data
     user_id = query.from_user.id
     user = await Customer.get(user_id) or await Guards.get(user_id)
 
-    if not await Customer.check_user_exists(user_id) and not await Guards.check_user_exists(user_id):
-        await query.message.delete()
-        await query.message.answer("Ви не зареєстровані!")
-    else:
-        if answer_data == 'edit_account':
-            keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
-                    [
-                        types.InlineKeyboardButton(text = "ПІБ", callback_data = "edit_fullname"),
-                        types.InlineKeyboardButton(text = "Місто", callback_data = "edit_city"),
-                    ]
+    if answer_data == 'edit_account':
+        keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
+                [
+                    types.InlineKeyboardButton(text = "ПІБ", callback_data = "edit_fullname"),
+                    types.InlineKeyboardButton(text = "Місто", callback_data = "edit_city"),
                 ]
-            )
-            
-            if await Guards.check_user_exists(user_id):
-                keyboard_markup.inline_keyboard[0].append(types.InlineKeyboardButton(text = "Опис", callback_data = "edit_description"))
-            
-
-            user_data = f'\nПІБ: {user["fullname"]}' + f'\nМісто: {user["city"]}' + f'\nТелефон: {user["phone"]}' + f'\nОпис: {user["description"]}' if user.get('description') else ''
-            await query.message.edit_text('Виберіть дані, які хочите змінити:' + user_data, reply_markup = keyboard_markup)
-
-        elif answer_data == 'delete_account':
-            keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
-                    [
-                        types.InlineKeyboardButton(text = "Видалити", callback_data = "accept_account_deleting"),
-                        types.InlineKeyboardButton(text = "Відмінити", callback_data = "cancle_account_deleting")
-                    ]
-                ]
-            )
-            await query.message.answer(f"Ви дійсно бажаєте видалити аккаунт, усі дані будуть видалені", reply_markup = keyboard_markup)
+            ]
+        )
         
+        if await Guards.check_user_exists(user_id):
+            keyboard_markup.inline_keyboard[0].append(types.InlineKeyboardButton(text = "Опис", callback_data = "edit_description"))
+        
+
+        user_data = f'\nПІБ: {user["fullname"]}' + f'\nМісто: {user["city"]}' + f'\nТелефон: {user["phone"]}' + f'\nОпис: {user["description"]}' if user.get('description') else ''
+        await query.message.edit_text('Виберіть дані, які хочите змінити:' + user_data, reply_markup = keyboard_markup)
+
+    elif answer_data == 'delete_account':
+        keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
+                [
+                    types.InlineKeyboardButton(text = "Видалити", callback_data = "accept_account_deleting"),
+                    types.InlineKeyboardButton(text = "Відмінити", callback_data = "cancle_account_deleting")
+                ]
+            ]
+        )
+        await query.message.answer(f"Ви дійсно бажаєте видалити аккаунт, усі дані будуть видалені", reply_markup = keyboard_markup)
+    
 
 @account_router.callback_query(F.data.in_({'edit_fullname', 'edit_city', 'edit_description'}), UserExistFilter(user_exist = True))
 async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
@@ -111,18 +107,24 @@ async def change_user_city_handler(query: types.CallbackQuery, state: FSMContext
     city_id = None
     
     if await Guards.check_user_exists(user_id):
-        city_id = get_cities()[Guards.get(user_id)['city']]
+        guard = await Guards.get(user_id)
+        city_id = get_cities()[guard['city']]
         await Guards.set_city(user_id, query.data)
     elif await Customer.check_user_exists(user_id):
-        city_id = get_cities()[Guards.get(user_id)['city']]
+        customer = await Customer.get(user_id)
+        city_id = get_cities()[customer['city']]
         await Customer.set_city(user_id, query.data) 
     
-    await bot.kick_chat_member(city_id, user_id)
+    if await bot.get_chat_member(city_id, user_id):
+        await bot.kick_chat_member(city_id, user_id)
+    
     await query.message.answer("Місто успішно змінене 👍🏻.")
+    
     city_id = get_cities()[query.data]
+    invite_invite = await bot.create_chat_invite_link(city_id)
     await query.message.answer('Тепер вам потрібно зайти в групу охоронців, щоб відсідковувати замовлення:', 
         reply_markup = types.InlineKeyboardMarkup(inline_keyboard = [[
-            types.InlineKeyboardButton(text = "Приєднатися", url = f'https://web.telegram.org/k/#{city_id}')
+            types.InlineKeyboardButton(text = "Приєднатися", url = invite_invite.invite_link)
         ]
     ]
     ))

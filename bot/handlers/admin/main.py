@@ -48,7 +48,7 @@ async def ban_user_handler(message: types.Message, state: FSMContext):
     await BlackList.add(user_id)
     
     await bot.ban_chat_member(chat_id, user_id)
-
+    
     await state.clear()
     await message.answer('Користувача забанено👍🏻.')
     await bot.send_message(chat_id = user_id, text = 'Вас забанено!')

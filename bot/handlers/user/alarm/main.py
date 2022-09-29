@@ -97,7 +97,6 @@ async def take_alarm_handler(query: types.CallbackQuery):
     ])
     customer = await Customer.get(int(get_alarm_customer(message_id)))
     guard = await Guards.get(user_id)
-
     customer_chat_id = get_alarm_customer(message_id)
     
     if len(current_guards) >= max_guards:
@@ -119,7 +118,60 @@ async def take_alarm_handler(query: types.CallbackQuery):
         \n<b>Місто: {guard["city"]}</b>\
         \n<b>Опис: {guard["description"]}</b>\
     ')
-    
+
+
+@alarm_router.callback_query(F.data.in_({"comfirm_alarm", "cancle_alarm"}), UserExistFilter(user_exist = True))
+async def comfirm_and_cancle_alarm_handler(query: types.CallbackQuery, state: FSMContext):
+    answer_data = query.data
+    user_id = query.from_user.id
+
+    customer = await Customer.get(user_id)
+    data = await state.get_data()
+    await state.clear()
+
+    if not data:
+        await query.message.answer('Замовлення не дійсне.')
+        await query.message.delete()
+    elif customer:
+        if answer_data == 'comfirm_alarm':
+            chat_id = get_cities()[customer['city']]
+            reason_of_alarm = data["reason_of_alarm"] if data.get("reason_of_alarm") else ""
+            amount_of_guards = data["amount_of_guards"]
+            location: types.Location = data["location"]
+            await bot.send_location(
+                chat_id = chat_id, 
+                latitude = location.latitude, 
+                longitude = location.longitude, 
+                horizontal_accuracy = location.horizontal_accuracy,
+                live_period = location.live_period,
+                heading = location.heading,
+                proximity_alert_radius = location.proximity_alert_radius,
+            )
+            
+            keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
+                [
+                    types.InlineKeyboardButton(text = f"Прийняти виклик 0/{amount_of_guards}", callback_data = "take_alarm"),
+                ]
+            ])
+            
+            alarm_message = await bot.send_message(
+                chat_id = chat_id, 
+                text = f'ТРИВОГА\nКількість охоронців: {amount_of_guards}\n{reason_of_alarm}',
+                reply_markup = keyboard_markup
+            )
+            
+            add_new_alarm(alarm_message.message_id, amount_of_guards, user_id)
+            keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
+                [
+                    types.InlineKeyboardButton(text = f"Відмінити виклик", callback_data = "customer_cancle_alarm"),
+                ]
+            ])
+            await query.message.answer('Ви успішно підтвердили виклик 👍🏻.', reply_markup = keyboard_markup)
+            await query.message.delete()
+            
+        elif answer_data == 'cancle_alarm': 
+            await query.message.answer('Ви успішно скасували виклик охорони 👍🏻.')
+
 
 @alarm_router.callback_query(F.data.in_({'cancle_alarm_task', 'arrived_on_alarm', 'finish_alarm'}), InBlacklist(in_blacklist = False), UserExistFilter(user_exist = True))
 async def guard_alarm_handler(query: types.CallbackQuery):
@@ -135,16 +187,19 @@ async def guard_alarm_handler(query: types.CallbackQuery):
 
             await query.message.edit_reply_markup(keyboard_markup)
             await query.message.answer('Ви успішно підтвердили своє прибуття 👍🏻.')
+            await bot.send_message(customer_id, 'Один із охоронців прибув на місце виклику')
 
         elif query.data == 'finish_alarm' or query.data == 'cancle_alarm_task':
             await query.message.delete()
             await query.message.answer('Ви успішно завершили виклик 👍🏻.')
             await query.message.answer('Ваш кібінет:', reply_markup = await account_markup(user_id))
+            await bot.send_message(customer_id, 'Один із охоронців завершив виклик')
             
             active_guards = get_cont_of_active_guards(alarm_id)
             remove_from_accepted_alarms(user_id)
             
             if active_guards == 1:
+                await bot.send_message(chat_id = customer_id, text = 'Виклик завершено охоронцями 👍🏻.')
                 await close_alarm(customer_id)
             else:
                 await bot.send_message(chat_id = customer_id, text = 'Один із охорнців завершив ваш виклик.')
@@ -152,9 +207,8 @@ async def guard_alarm_handler(query: types.CallbackQuery):
         await query.message.reply('Цього виклику не існує.')
         await query.message.delete() 
 
-
 @alarm_router.callback_query(F.data == 'customer_cancle_alarm', InBlacklist(in_blacklist = False), UserExistFilter(user_exist = True))
-async def comfirm_alarm_handler(query: types.CallbackQuery):
+async def customer_cancle_alarm_handler(query: types.CallbackQuery):
     user_id = query.from_user.id
     customer = await Customer.get(user_id)
     
