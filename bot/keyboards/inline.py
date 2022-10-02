@@ -1,7 +1,7 @@
 from aiogram import types
 from ..database.classes.customer import Customer
 from ..misc.utils.cities import get_cities
-from bot.misc.bot import bot
+
 
 async def account_markup(user_id: int) -> types.InlineKeyboardMarkup | None:
     keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
@@ -25,12 +25,3 @@ def get_cities_markup():
         [types.InlineKeyboardButton(text = city, callback_data = city) for city in get_cities()]
     ])
     return keyboard_markup
-
-
-async def close_alarm(user_id: int):
-    keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
-        [
-            types.InlineKeyboardButton(text = f"Залишити відгук", callback_data = "leave_respond"),
-        ]
-    ])
-    await bot.send_message(chat_id = user_id, text = 'Тепер ви можете залишити відгук:', reply_markup = keyboard_markup)
