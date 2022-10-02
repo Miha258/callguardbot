@@ -19,7 +19,7 @@ async def main():
     dp.include_router(responds_router)
     # dp.include_router(paynaments_router)
     dp.include_router(admin_router)
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, polling_timeout = 0)
 
 
 if __name__ == "__main__":
