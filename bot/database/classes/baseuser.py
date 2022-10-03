@@ -17,6 +17,11 @@ class BaseUser(DB, ABC):
     async def set_phone(cls, user_id: int, phone: str):
         await cls.update(user_id, "set", {'phone': phone})
         
+
+    @classmethod
+    async def set_photo(cls, user_id: int, file_id: str):
+        await cls.update(user_id, "set", {'phone': file_id})
+
     
     @classmethod
     async def check_user_exists(cls, user_id: int) -> bool:
