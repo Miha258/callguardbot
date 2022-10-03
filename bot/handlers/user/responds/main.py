@@ -11,6 +11,7 @@ from ....database.classes.user_responds import UserResponds
 
 responds_router = Router()
 
+
 @responds_router.callback_query(F.data == 'leave_respond', UserExistFilter(user_exist = True))
 async def leave_respond_handler(query: types.CallbackQuery, state: FSMContext):
     await state.set_state(AlarmState.user_respond)

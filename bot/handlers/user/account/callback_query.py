@@ -24,6 +24,7 @@ async def user_account_options(query: types.CallbackQuery):
                 [
                     types.InlineKeyboardButton(text = "ПІБ", callback_data = "edit_fullname"),
                     types.InlineKeyboardButton(text = "Місто", callback_data = "edit_city"),
+                    types.InlineKeyboardButton(text = "Фото", callback_data = "edit_photo"),
                 ]
             ]
         )
@@ -32,8 +33,12 @@ async def user_account_options(query: types.CallbackQuery):
             keyboard_markup.inline_keyboard[0].append(types.InlineKeyboardButton(text = "Опис", callback_data = "edit_description"))
         
 
-        user_data = f'\nПІБ: {user["fullname"]}' + f'\nМісто: {user["city"]}' + f'\nТелефон: {user["phone"]}' + f'\nОпис: {user["description"]}' if user.get('description') else ''
+        guard_description = f'\nОпис: {user["description"]}' if user.get('description') else ''
+        user_data = f'\nПІБ: {user["fullname"]}' + f'\nМісто: {user["city"]}' + f'\nТелефон: {user["phone"]}' + guard_description
+        user_photo = user["photo"]
+
         await query.message.edit_text('Виберіть дані, які хочите змінити:' + user_data, reply_markup = keyboard_markup)
+        await query.message.reply_photo(user_photo, 'Ваше фото')
 
     elif answer_data == 'delete_account':
         keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
@@ -46,7 +51,7 @@ async def user_account_options(query: types.CallbackQuery):
         await query.message.answer(f"Ви дійсно бажаєте видалити аккаунт, усі дані будуть видалені", reply_markup = keyboard_markup)
     
 
-@account_router_callbacks.callback_query(F.data.in_({'edit_fullname', 'edit_city', 'edit_description'}), UserExistFilter(user_exist = True))
+@account_router_callbacks.callback_query(F.data.in_({'edit_fullname', 'edit_city', 'edit_description', 'edit_photo'}), UserExistFilter(user_exist = True))
 async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
     await query.message.delete()
     answer_data = query.data
@@ -72,6 +77,10 @@ async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
             ]
         )
         await query.message.answer(f"Ви точно хочете змінити місто? Ваше місто: {current_city['city']}", reply_markup = keyboard_markup)
+
+    elif answer_data == 'edit_photo':
+        await state.set_state(AccountEdits.photo)
+        await query.message.answer("Скиньте нове фото:")
 
     elif answer_data == 'edit_description':
         await state.set_state(AccountEdits.description)
@@ -120,7 +129,7 @@ async def comfirm_city_change(query: types.CallbackQuery, state: FSMContext):
     if answer_data == 'accept_city_changing':
         await state.set_state(AccountEdits.city)
         keyboard_markup = get_cities_markup()
-        await query.message.answer(f"Виберіть нове місто із списку: ", reply_markup = keyboard_markup)
+        await query.message.answer("Виберіть нове місто із списку:", reply_markup = keyboard_markup)
         await query.message.delete()
 
     elif answer_data == 'cancle_city_changing':
