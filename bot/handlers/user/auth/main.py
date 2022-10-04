@@ -2,17 +2,12 @@ from aiogram import types
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from .state import CreateAccount
-from ....database.classes.customer import Customer
-from ....database.classes.guards import Guards
-from ....keyboards.inline import account_markup, get_cities_markup, send_terms
-from bot.misc.bot import bot
-from bot.misc.utils.cities import get_cities
+from ....keyboards.inline import get_cities_markup, send_terms
 from ....filters.user_exist import UserExistFilter
 from ....filters.is_phone import ValidtePhone
 
 from .commands import auth_router_commands
 from .callback_query import auth_router_callbacks
-from bot.misc.bot import API_TOKEN
 
 auth_router = Router()
 auth_router.include_router(auth_router_commands)
@@ -40,7 +35,7 @@ async def set_photo(message: types.Message, state: FSMContext):
 async def enter_phone(message: types.Message, state: FSMContext):
     await state.update_data({"phone": message.text})
     data = await state.get_data()
-
+    
     if data['user_type'] == 'guard':
         await state.set_state(CreateAccount.description)
         await message.answer('Тепер розкажіть про себе і свій досвід:')

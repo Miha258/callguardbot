@@ -35,23 +35,23 @@ async def choose_city(query: types.CallbackQuery, state: FSMContext):
 
 
 
-@auth_router_callbacks.callback_query(CreateAccount.accept_terms)
+@auth_router_callbacks.callback_query(CreateAccount.accept_terms, F.data.func(lambda data: data in {"accept_terms", "refuse_terms"}))
 async def choose_city(query: types.CallbackQuery, state: FSMContext):
     answer_data = query.data
-    user_id = query.message.from_user.id
+    user_id = query.from_user.id
 
-    data = await state.get_data()
+    data = await state.get_data()   
     await state.clear()
     if answer_data == 'accept_terms':
-        data['_id'] = query.message.from_user.id
+        data['_id'] = user_id
         data['activated'] = False
         user_type = data['user_type']
         del data['user_type']
 
         if user_type == 'guard':
-            await query.message.answer('Ви успішно зареєстувалися як <b>охоронець</b>.')
             await Guards.insert(data)
-            
+            await query.message.answer('Ви успішно зареєстувалися як <b>охоронець</b>.')
+
             city_id = get_cities()[data['city']]
             invite_link = await bot.create_chat_invite_link(city_id)
             await query.message.answer('Тепер вам потрібно зайти в групу охоронців, щоб відсідковувати замовлення:', 
@@ -59,12 +59,15 @@ async def choose_city(query: types.CallbackQuery, state: FSMContext):
                     types.InlineKeyboardButton(text = "Приєднатися", url = invite_link)
                 ]
             ]))
-        elif user_type == 'customer':
-            await query.message.answer('Ви успішно зареєстувалися як <b>клієнт</b>.')
-            await Customer.insert(data)
-        
-        keyboard_markup = await account_markup(user_id)
-        await query.message.answer("Ваш кабінет:", reply_markup = keyboard_markup)    
+            keyboard_markup = await account_markup(user_id)
+            await query.message.answer("Ваш кабінет:", reply_markup = keyboard_markup)
 
-    elif answer_data == 'refuse_terms':
+        elif user_type == 'customer':
+            await Customer.insert(data)
+            await query.message.answer('Ви успішно зареєстувалися як <b>клієнт</b>.')
+            keyboard_markup = await account_markup(user_id)
+            await query.message.answer("Ваш кабінет:", reply_markup = keyboard_markup)
+        
+    
+    elif answer_data == 'refuse_terms':  
         await query.message.answer('Ви відмовлися від реєстрації.')

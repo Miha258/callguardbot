@@ -54,22 +54,25 @@ async def take_alarm_handler(query: types.CallbackQuery):
     if len(current_guards) >= max_guards:
         await query.message.delete_reply_markup()
     
-    await bot.send_message(chat_id = user_id, text = f'При прибутті на місце виклику\
+    info_message: types.Message = await bot.send_message(chat_id = user_id, text =  
+        f'При прибутті на місце виклику\
         нажміть \"Прибув на виклик\"(\"Відміна виклику\" стає недоступною).\
         При завершенні нажміть кнопку \"Завершити виклик\".\n\n            \
         Інформація про клієнта:\n \
         \n<b>ПІБ: {customer["fullname"]}</b>\
         \n<b>Номер телефону: {customer["phone"]}</b>',
         reply_markup = keyboard_markup)
-
+    await info_message.reply_photo(photo = customer["photo"], caption = 'Фото замовника:')
 
     
-    await bot.send_message(chat_id = customer_chat_id, text = f'Інформація про охоронця:\n\
+    info_message = await bot.send_message(chat_id = customer_chat_id, text = 
+        f'Інформація про охоронця:\n\
         \n<b>ПІБ: {guard["fullname"]}</b>\
         \n<b>Номер телефону: {guard["phone"]}</b>\
         \n<b>Місто: {guard["city"]}</b>\
-        \n<b>Опис: {guard["description"]}</b>\
-    ')
+        \n<b>Опис: {guard["description"]}</b>'
+    )
+    await info_message.reply_photo(photo = guard["photo"], caption = 'Фото охоронця:')
 
 
 @alarm_router_callbacks.callback_query(F.data.in_({"comfirm_alarm", "cancle_alarm"}), UserExistFilter(user_exist = True))

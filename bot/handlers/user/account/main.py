@@ -31,7 +31,11 @@ async def change_user_fullname_handler(message: types.Message, state: FSMContext
 async def change_user_description_handler(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     if message.photo:
-        await Guards.set_photo(user_id, message.text)
+        if await Guards.check_user_exists(user_id):
+            await Guards.set_photo(user_id, message.text)
+        elif await Customer.check_user_exists(user_id):
+            await Customer.set_photo(user_id, message.text)
+
         await message.answer("Ви успішно змінили фото 👍🏻.")
         await state.clear()
         await message.answer("Ваш кабінет:", reply_markup = await account_markup(user_id))
@@ -46,7 +50,7 @@ async def change_user_description_handler(message: types.Message, state: FSMCont
     await message.answer("Ви успішно змінили опис 👍🏻.")
     await state.clear()
     await message.answer("Ваш кабінет: ", reply_markup = await account_markup(user_id))
-    
+
 
 
     

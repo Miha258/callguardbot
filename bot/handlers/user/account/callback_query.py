@@ -36,9 +36,9 @@ async def user_account_options(query: types.CallbackQuery):
         guard_description = f'\nОпис: {user["description"]}' if user.get('description') else ''
         user_data = f'\nПІБ: {user["fullname"]}' + f'\nМісто: {user["city"]}' + f'\nТелефон: {user["phone"]}' + guard_description
         user_photo = user["photo"]
-
-        await query.message.edit_text('Виберіть дані, які хочите змінити:' + user_data, reply_markup = keyboard_markup)
-        await query.message.reply_photo(user_photo, 'Ваше фото')
+        print(user_photo)
+        user_data = await query.message.edit_text('Виберіть дані, які хочите змінити:' + user_data, reply_markup = keyboard_markup)
+        await user_data.reply_photo(user_photo, caption = 'Ваше фото:')
 
     elif answer_data == 'delete_account':
         keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
