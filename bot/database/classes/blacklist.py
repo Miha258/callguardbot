@@ -2,6 +2,7 @@ from ..main import cluster
 from ..main import DB
 
 
+
 class BlackList(DB):
     collection = cluster.guardbot.blacklist
 
