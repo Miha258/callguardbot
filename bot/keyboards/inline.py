@@ -1,3 +1,4 @@
+from bot.misc.utils.alarm import remove_alarm, get_alarm_by_customer_id, is_alarm_exists
 from aiogram import types
 from ..database.classes.customer import Customer
 from ..misc.utils.cities import get_cities
@@ -28,6 +29,10 @@ def get_cities_markup():
 
 
 async def close_alarm(user_id: int):
+    alarm_id = get_alarm_by_customer_id(user_id)
+    print(is_alarm_exists(alarm_id))
+    remove_alarm(alarm_id)
+
     keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
         [
             types.InlineKeyboardButton(text = f"Залишити відгук", callback_data = "leave_respond"),
