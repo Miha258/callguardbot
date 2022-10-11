@@ -32,9 +32,9 @@ async def change_user_description_handler(message: types.Message, state: FSMCont
     user_id = message.from_user.id
     if message.photo:
         if await Guards.check_user_exists(user_id):
-            await Guards.set_photo(user_id, message.text)
+            await Guards.set_photo(user_id, message.photo[0].file_id)
         elif await Customer.check_user_exists(user_id):
-            await Customer.set_photo(user_id, message.text)
+            await Customer.set_photo(user_id, message.photo[0].file_id )
 
         await message.answer("Ви успішно змінили фото 👍🏻.")
         await state.clear()

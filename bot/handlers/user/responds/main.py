@@ -32,5 +32,5 @@ async def get_respond_handler(message: types.Message, state: FSMContext):
         await UserResponds.new(guard, customer['fullname'], customer['city'], message.text)
 
     remove_alarm(alarm_id)
-    await message.answer('Відгук залишено👍🏻. ')
-    await message.answer('Ваш кібінет:', reply_markup = await account_markup(user_id))
+    await message.answer('Відгук залишено👍🏻.')
+    await message.answer('Ваш кабінет:', reply_markup = await account_markup(user_id))  

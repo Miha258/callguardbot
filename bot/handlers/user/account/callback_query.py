@@ -152,7 +152,7 @@ async def comfirm_account_delate(query: types.CallbackQuery, state: FSMContext):
                 await Customer.delete(user_id)
             elif await Guards.check_user_exists(user_id):
                 await Guards.delete(user_id)
-
+            
             await query.message.answer('Ваш акаунт видалено 👍🏻.')
             keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
                 [

@@ -5,9 +5,11 @@ from .state import AlarmState
 from bot.filters.in_black_list import InBlacklist
 from bot.filters.user_exist import UserExistFilter
 from .callback_query import alarm_router_callbacks
+from .commands import alarm_router_commands
 
 alarm_router = Router()
 alarm_router.include_router(alarm_router_callbacks)
+alarm_router.include_router(alarm_router_commands)
 
 
 @alarm_router.message(AlarmState.amount_of_guards, InBlacklist(in_blacklist = False), UserExistFilter(user_exist = True))
