@@ -41,6 +41,8 @@ def main():
 
 
     app = web.Application()
+
+    app.router.add_get()
     SimpleRequestHandler(dispatcher = dp, bot = bot).register(app, path = MAIN_BOT_PATH)
     TokenBasedRequestHandler(dispatcher = dp, bot_settings = bot_settings).register(app, path = OTHER_BOTS_PATH)
 
