@@ -11,6 +11,7 @@ from ....database.classes.user_responds import UserResponds
 
 responds_router = Router()
 
+
 @responds_router.callback_query(F.data == 'leave_respond', UserExistFilter(user_exist = True))
 async def leave_respond_handler(query: types.CallbackQuery, state: FSMContext):
     await state.set_state(AlarmState.user_respond)
@@ -31,5 +32,5 @@ async def get_respond_handler(message: types.Message, state: FSMContext):
         await UserResponds.new(guard, customer['fullname'], customer['city'], message.text)
 
     remove_alarm(alarm_id)
-    await message.answer('Відгук залишено👍🏻. ')
-    await message.answer('Ваш кібінет:', reply_markup = await account_markup(user_id))
+    await message.answer('Відгук залишено👍🏻.')
+    await message.answer('Ваш кабінет:', reply_markup = await account_markup(user_id))  
