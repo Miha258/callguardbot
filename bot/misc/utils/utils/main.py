@@ -1,0 +1,1 @@
+JSON_PATH = 'C:\Coding\guardbot\AiogramTemplate-main\config.json'
