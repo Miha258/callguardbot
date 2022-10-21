@@ -4,8 +4,8 @@ import hmac
 import hashlib
 
 
-merchant_account = 'freelance_user_634c73f3cc45b'
-merchant_key = "704328eab72fb02d83be3663f8cc9e88b7cb64a1"
+merchant_account = 'github_com5'
+merchant_key = "04c61da8bb18e75913da311989924be68beaf404"
 merchant_domain = 'edossecurity.com'  
 generate_signature = lambda merchant_key, data_str: hmac.new(merchant_key.encode('utf-8'), data_str.encode('utf-8'), hashlib.md5).hexdigest()
 
