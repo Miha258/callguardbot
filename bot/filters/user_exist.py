@@ -11,9 +11,11 @@ class UserExistFilter(BaseFilter):
 
         guard_exist = await Guards.check_user_exists(user_id)
         customer = await Customer.check_user_exists(user_id)
-    
+        
         if guard_exist or customer:
-            return True
+            if self.user_exist:
+                return True
+            return False
 
         elif not self.user_exist:
             return True
