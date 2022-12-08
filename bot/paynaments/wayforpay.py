@@ -21,7 +21,7 @@ def get_invoice_url(user_id: int) -> str:
         "merchantSignature": generate_signature(merchant_key, signature_data),
         "apiVersion": 1,
         "language": "ua",
-        "serviceUrl": "https://44be-194-44-56-49.eu.ngrok.io",
+        "serviceUrl": "https://edossecurity.com/paynaments",
         "orderReference": f"{order_date}:{user_id}",
         "orderDate": 1421412898,
         "amount": 1, 
