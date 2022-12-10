@@ -13,6 +13,6 @@ paynament_router = Router()
 async def alarm_handler(query: types.CallbackQuery):
     user_id = query.from_user.id
     url = get_invoice_url(user_id)
-    
+
     keyboard_markup = get_guard_access_markup(user_id, url)
     await query.message.answer("Тепер перейдіть по посиланню для оплати послуги:", reply_markup = keyboard_markup)

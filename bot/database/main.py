@@ -4,7 +4,7 @@ from abc import ABC
 from os import environ
 
 
-MONGODB_URI = "mongodb+srv://tEST:Hrfb2kLK8Aoo4Fxk@cluster0.zlpox.mongodb.net/guardbot?retryWrites=true&w=majority"
+MONGODB_URI = "localhost:27017"
 cluster: motor.motor_asyncio.core.AgnosticClient = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URI)
 
 class DB(ABC):

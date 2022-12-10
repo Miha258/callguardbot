@@ -1,1 +1,1 @@
-JSON_PATH = 'C:\Coding\guardbot\AiogramTemplate-main\config.json'
+JSON_PATH = 'C:\guardsbot\config.json'

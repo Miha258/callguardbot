@@ -48,7 +48,7 @@ async def user_account_options(query: types.CallbackQuery):
                 ]
             ]
         )
-        await query.message.reply(f"Ви дійсно бажаєте видалити аккаунт, усі дані будуть видалені", reply_markup = keyboard_markup)
+        await query.message.answer(f"Ви дійсно бажаєте видалити аккаунт, усі дані будуть видалені", reply_markup = keyboard_markup)
     
 
 @account_router_callbacks.callback_query(F.data.in_({'edit_fullname', 'edit_city', 'edit_description', 'edit_photo'}), UserExistFilter(user_exist = True))
@@ -58,11 +58,12 @@ async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
     user_id = query.from_user.id
  
     if answer_data == 'edit_fullname':
-        await query.message.reply("Введіть новий ПІБ:")
+        await query.message.answer("Введіть новий ПІБ:")
         await state.set_state(AccountEdits.fullname)
         
     elif answer_data == 'edit_city':
         current_city = None
+        await state.set_state(AccountEdits.city)
     
         if await Guards.check_user_exists(user_id):
             current_city = await Guards.get(user_id)
@@ -76,15 +77,15 @@ async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
                 ]
             ]
         )
-        await query.message.reply(f"Ви точно хочете змінити місто? Ваше місто: {current_city['city']}", reply_markup = keyboard_markup)
+        await query.message.answer(f"Ви точно хочете змінити місто? Ваше місто: {current_city['city']}", reply_markup = keyboard_markup)
 
     elif answer_data == 'edit_photo':
         await state.set_state(AccountEdits.photo)
-        await query.message.reply("Скиньте нове фото:")
+        await query.message.answer("Скиньте нове фото:")
 
     elif answer_data == 'edit_description':
         await state.set_state(AccountEdits.description)
-        await query.message.reply("Введіть новий опис:")
+        await query.message.answer("Введіть новий опис:")
 
 
 @account_router_callbacks.callback_query(AccountEdits.city, F.data.in_(get_cities()), UserExistFilter(user_exist = True))
@@ -102,20 +103,20 @@ async def change_user_city_handler(query: types.CallbackQuery, state: FSMContext
 
         if await bot.get_chat_member(city_id, user_id):
             await bot.kick_chat_member(city_id, user_id)
-    
-    elif await Customer.check_user_exists(user_id):
-        customer = await Customer.get(user_id)
-        city_id = get_cities()[customer['city']]
-        await Customer.set_city(user_id, query.data) 
-    
+        
         city_id = get_cities()[query.data]
         invite_invite = await bot.create_chat_invite_link(city_id)
         await query.message.answer('Тепер вам потрібно зайти в групу охоронців, щоб відсідковувати замовлення:', 
             reply_markup = types.InlineKeyboardMarkup(inline_keyboard = [[
                 types.InlineKeyboardButton(text = "Приєднатися", url = invite_invite.invite_link)
             ]
-        ]   
-    ))
+        ]))
+    
+    elif await Customer.check_user_exists(user_id):
+        customer = await Customer.get(user_id)
+        city_id = get_cities()[customer['city']]
+        await Customer.set_city(user_id, query.data) 
+    
     await query.message.answer("Місто успішно змінене 👍🏻.")
     await query.message.answer("Ваш кабінет: ", reply_markup = await account_markup(user_id))
 
