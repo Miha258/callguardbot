@@ -1,8 +1,6 @@
 import json
-from re import S
 from typing import Any
-# from .main import JSON_PATH
-JSON_PATH = 'C:\Coding\guardbot\AiogramTemplate-main\config.json'
+from .main import JSON_PATH
 
 def add_new_alarm(id: int, max: int, customer_id: int, reason: str):
     with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
