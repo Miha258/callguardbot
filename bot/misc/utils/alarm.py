@@ -1,10 +1,10 @@
 import json
 from re import S
 from typing import Any
-from .main import JSON_PATH
+# from .main import JSON_PATH
+JSON_PATH = 'C:\Coding\guardbot\AiogramTemplate-main\config.json'
 
-
-def add_new_alarm(id: int, max: int, customer_id: int):
+def add_new_alarm(id: int, max: int, customer_id: int, reason: str):
     with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
         config = json.load(f)
 
@@ -13,7 +13,8 @@ def add_new_alarm(id: int, max: int, customer_id: int):
         "arrived_guards": 0,
         "max": max,
         "customer": customer_id,
-        "status": 'Триває набір охоронців'
+        "status": 'Триває набір охоронців',
+        "reason": reason
     }
     
     with open(JSON_PATH, 'w', encoding = 'utf-8') as f:
@@ -90,6 +91,17 @@ def get_alarm_customer(id: int) -> str | None:
     if alarm:
         return alarm["customer"]
     return None
+
+
+def get_alarm_reason(id: int) -> str | None:
+    with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
+        config = json.load(f)
+    
+    alarm: list = config["alarms"].get(str(id))
+    if alarm:
+        return alarm["reason"]
+    return None
+
 
 
 def get_alarm_by_customer_id(user_id: int) -> int | None:
@@ -173,5 +185,12 @@ def get_count_of_arrived_guards(id: int) -> str | None:
     if alarm:
         return config["alarms"][str(id)]["arrived_guards"]
     return None
+
+
+def get_alarm_notation(reason: str) -> str:
+    with open(JSON_PATH, 'r', encoding = 'utf-8') as f:
+        config = json.load(f)
+    
+    return config["guards_notations"][reason]
         
 
