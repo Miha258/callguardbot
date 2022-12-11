@@ -2,6 +2,12 @@
     "admins": [
         1095610815
     ],
+    "guards_notations": {
+        "Zagroza Djity": "TEST",
+        "Simeyna svarka": "Test",
+        "Suprovid": "TEST",
+        "DTP": "TEST"
+    },
     "cities": {
         "\u041b\u044c\u0432\u0456\u0432": -732394688
     },
