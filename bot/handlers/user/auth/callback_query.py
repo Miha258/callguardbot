@@ -34,7 +34,6 @@ async def choose_city(query: types.CallbackQuery, state: FSMContext):
     await query.message.answer('Введіть ваш телефон:')
 
 
-
 @auth_router_callbacks.callback_query(CreateAccount.accept_terms, F.data.func(lambda data: data in {"accept_terms", "refuse_terms"}))
 async def choose_city(query: types.CallbackQuery, state: FSMContext):
     answer_data = query.data

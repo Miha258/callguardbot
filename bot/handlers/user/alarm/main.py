@@ -64,11 +64,11 @@ async def get_alarm_location(message: types.Message, state: FSMContext):
             
             alarm_message = await bot.send_message(
                 chat_id = chat_id, 
-                text = f'ТРИВОГА\nКількість охоронців: {amount_of_guards}\nПричина: {reason_of_alarm}',
+                text = f'ТРИВОГА\nКількість охоронців: {amount_of_guards}\nПричина: {reason_of_alarm.split("/")[0]}',
                 reply_markup = keyboard_markup
             )
             
-            add_new_alarm(alarm_message.message_id, amount_of_guards, user_id)
+            add_new_alarm(alarm_message.message_id, amount_of_guards, user_id, reason_of_alarm.split('/')[1])
 
             keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
                 [

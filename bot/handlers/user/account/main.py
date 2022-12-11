@@ -21,7 +21,7 @@ async def change_user_fullname_handler(message: types.Message, state: FSMContext
         await Guards.set_fullname(user_id, message.text)
     elif await Customer.check_user_exists(user_id):
         await Customer.set_fullname(user_id, message.text)
-
+    
     await message.answer("Ви успішно змінили ПІБ 👍🏻.")
     await state.clear()
     await message.answer("Ваш кабінет: ", reply_markup = await account_markup(user_id))

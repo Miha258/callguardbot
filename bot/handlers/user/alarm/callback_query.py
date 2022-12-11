@@ -35,53 +35,56 @@ async def explain_reason_of_alarm_handler(query: types.CallbackQuery, state: FSM
 async def take_alarm_handler(query: types.CallbackQuery):
     message_id = query.message.message_id
     user_id = query.from_user.id
-    
-    if await Guards.check_user_exists(user_id) and not get_from_accepted_alarms(user_id):
-        add_guard_to_alarm(message_id, user_id)
-        add_to_accepted_alarms(user_id, query.message.message_id)
-        current_guards = get_alarm_guards(message_id)
-        max_guards = get_max_alarm_guards(message_id)
-        
-        await query.message.edit_reply_markup(
-            types.InlineKeyboardMarkup(inline_keyboard = [
-                [
-                    types.InlineKeyboardButton(text = f"Прийняти виклик {len(current_guards)}/{max_guards}", callback_data = "take_alarm"),
-                ]
-            ]
-        ))
-        keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
-            [
-                types.InlineKeyboardButton(text = f'Відміна виклику', callback_data = 'cancle_alarm_task'),
-                types.InlineKeyboardButton(text = f'Прибув на виклик', callback_data = 'arrived_on_alarm'),
-            ]
-        ])
-        customer = await Customer.get(int(get_alarm_customer(message_id)))
-        guard = await Guards.get(user_id)
-        customer_chat_id = get_alarm_customer(message_id)
-        
-        if len(current_guards) >= max_guards:
-            set_alarm_status(message_id, "Кількість охоронців набрана")
-            await query.message.delete_reply_markup()
-        
-        info_message: types.Message = await bot.send_message(chat_id = user_id, text =  
-            f'При прибутті на місце виклику\
-            нажміть \"Прибув на виклик\"(\"Відміна виклику\" стає недоступною).\
-            При завершенні нажміть кнопку \"Завершити виклик\".\n\n            \
-            Інформація про клієнта:\n \
-            \n<b>ПІБ: {customer["fullname"]}</b>\
-            \n<b>Номер телефону: {customer["phone"]}</b>',
-            reply_markup = keyboard_markup)
-        await info_message.reply_photo(photo = customer["photo"], caption = 'Фото замовника:')
 
-        
-        info_message = await bot.send_message(chat_id = customer_chat_id, text = 
-            f'Інформація про охоронця:\n\
-            \n<b>ПІБ: {guard["fullname"]}</b>\
-            \n<b>Номер телефону: {guard["phone"]}</b>\
-            \n<b>Місто: {guard["city"]}</b>\
-            \n<b>Опис: {guard["description"]}</b>'
-        )
-        await info_message.reply_photo(photo = guard["photo"], caption = 'Фото охоронця:')
+
+    add_guard_to_alarm(message_id, user_id)
+    add_to_accepted_alarms(user_id, query.message.message_id)
+    current_guards = get_alarm_guards(message_id)
+    max_guards = get_max_alarm_guards(message_id)
+    
+    await query.message.edit_reply_markup(
+        types.InlineKeyboardMarkup(inline_keyboard = [
+            [
+                types.InlineKeyboardButton(text = f"Прийняти виклик {len(current_guards)}/{max_guards}", callback_data = "take_alarm"),
+            ]
+        ]
+    ))
+    keyboard_markup = types.InlineKeyboardMarkup(inline_keyboard = [
+        [
+            types.InlineKeyboardButton(text = f'Відміна виклику', callback_data = 'cancle_alarm_task'),
+            types.InlineKeyboardButton(text = f'Прибув на виклик', callback_data = 'arrived_on_alarm'),
+        ]
+    ])
+
+    customer = await Customer.get(int(get_alarm_customer(message_id)))
+    guard = await Guards.get(user_id)
+    customer_chat_id = get_alarm_customer(message_id)
+
+    if len(current_guards) >= max_guards:
+        set_alarm_status(message_id, "Кількість охоронців набрана")
+        await query.message.delete_reply_markup()
+    
+    info_message: types.Message = await bot.send_message(chat_id = user_id, text =  
+        f'При прибутті на місце виклику\
+        нажміть \"Прибув на виклик\"(\"Відміна виклику\" стає недоступною).\
+        При завершенні нажміть кнопку \"Завершити виклик\".\n\n            \
+        Інформація про клієнта:\n \
+        \n<b>ПІБ: {customer["fullname"]}</b>\
+        \n<b>Номер телефону: {customer["phone"]}</b>',
+        reply_markup = keyboard_markup)
+    await info_message.reply_photo(photo = customer["photo"], caption = 'Фото замовника:')
+
+    alarm_reason = get_alarm_reason(message_id)
+    await bot.send_message(chat_id = user_id, text = get_alarm_notation(alarm_reason))
+    
+    info_message = await bot.send_message(chat_id = customer_chat_id, text = 
+        f'Інформація про охоронця:\n\
+        \n<b>ПІБ: {guard["fullname"]}</b>\
+        \n<b>Номер телефону: {guard["phone"]}</b>\
+        \n<b>Місто: {guard["city"]}</b>\
+        \n<b>Опис: {guard["description"]}</b>'
+    )
+    await info_message.reply_photo(photo = guard["photo"], caption = 'Фото охоронця:')
 
 
 @alarm_router_callbacks.callback_query(F.data.in_({'cancle_alarm_task', 'arrived_on_alarm', 'finish_alarm'}), InBlacklist(in_blacklist = False), UserExistFilter(user_exist = True))
