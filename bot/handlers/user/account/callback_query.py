@@ -53,7 +53,6 @@ async def user_account_options(query: types.CallbackQuery):
 
 @account_router_callbacks.callback_query(F.data.in_({'edit_fullname', 'edit_city', 'edit_description', 'edit_photo'}), UserExistFilter(user_exist = True))
 async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
-    await query.message.delete()
     answer_data = query.data
     user_id = query.from_user.id
  
@@ -77,16 +76,17 @@ async def edit_account_options(query: types.CallbackQuery, state: FSMContext):
                 ]
             ]
         )
-        await query.message.reply(f"Ви точно хочете змінити місто? Ваше місто: {current_city['city']}", reply_markup = keyboard_markup)
+        await query.message.answer(f"Ви точно хочете змінити місто? Ваше місто: {current_city['city']}", reply_markup = keyboard_markup)
     
     elif answer_data == 'edit_photo':
         await state.set_state(AccountEdits.photo)
-        await query.message.reply("Скиньте нове фото:")
+        await query.message.answer("Скиньте нове фото:")
 
     elif answer_data == 'edit_description':
         await state.set_state(AccountEdits.description)
-        await query.message.reply("Введіть новий опис:")
-
+        await query.message.answer("Введіть новий опис:")
+    
+    await query.message.delete()
 
 @account_router_callbacks.callback_query(AccountEdits.city, F.data.in_(get_cities()), UserExistFilter(user_exist = True))
 async def change_user_city_handler(query: types.CallbackQuery, state: FSMContext):
